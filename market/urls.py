@@ -1,0 +1,36 @@
+from django.urls import path
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
+from .views import StartupListCreateView, StartupDetailView, UserRegistrationView, UserProfileView
+
+urlpatterns = [
+    # ------------------------------------------------------------------
+    # Autentifikatsiya endpointlari
+    # ------------------------------------------------------------------
+
+    # Yangi foydalanuvchi ro'yxatdan o'tkazish
+    # POST /api/register/  →  { username, password, email? }
+    path('register/', UserRegistrationView.as_view(), name='user-register'),
+
+    # Login: username va password bilan access + refresh token olish
+    # POST /api/login/  →  { username, password }  =>  { access, refresh }
+    path('login/', TokenObtainPairView.as_view(), name='token-obtain-pair'),
+
+    # Access token muddati tugaganda refresh token bilan yangilash
+    # POST /api/token/refresh/  →  { refresh }  =>  { access }
+    path('token/refresh/', TokenRefreshView.as_view(), name='token-refresh'),
+
+    # Tizimga kirgan foydalanuvchining o'z profili
+    # GET/PUT/PATCH /api/profile/  (Authorization: Bearer <access_token>)
+    path('profile/', UserProfileView.as_view(), name='user-profile'),
+
+    # ------------------------------------------------------------------
+    # Startup (loyiha) endpointlari
+    # ------------------------------------------------------------------
+
+    # GET (ro'yxat) va POST (yaratish)
+    path('startups/', StartupListCreateView.as_view(), name='startup-list-create'),
+
+    # GET (ko'rish), PUT/PATCH (yangilash), DELETE (o'chirish)
+    path('startups/<int:pk>/', StartupDetailView.as_view(), name='startup-detail'),
+]
