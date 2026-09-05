@@ -60,6 +60,23 @@ class AdminStartupDeleteView(generics.DestroyAPIView):
     permission_classes = [permissions.IsAdminUser]
 
 
+class ToggleStartupPremiumView(APIView):
+    """
+    POST /api/admin/startups/<pk>/toggle-premium/
+    
+    Startup'ning premium (is_premium) holatini o'zgartiradi.
+    Faqat admin/staff foydalana oladi.
+    """
+    permission_classes = [permissions.IsAdminUser]
+
+    def post(self, request, pk):
+        startup = get_object_or_404(Startup, pk=pk)
+        
+        startup.is_premium = not startup.is_premium
+        startup.save()
+        return Response({"is_premium": startup.is_premium})
+
+
 class ToggleUserStatusView(APIView):
     """
     POST /api/admin/users/<pk>/toggle-status/
