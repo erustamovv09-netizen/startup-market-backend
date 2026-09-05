@@ -1,7 +1,14 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from .views import StartupListCreateView, StartupDetailView, UserRegistrationView, UserProfileView
+from .views import (
+    StartupListCreateView, 
+    StartupDetailView, 
+    UserRegistrationView, 
+    UserProfileView, 
+    AdminUserListView,
+    ToggleUserStatusView
+)
 
 urlpatterns = [
     # ------------------------------------------------------------------
@@ -23,6 +30,18 @@ urlpatterns = [
     # Tizimga kirgan foydalanuvchining o'z profili
     # GET/PUT/PATCH /api/profile/  (Authorization: Bearer <access_token>)
     path('profile/', UserProfileView.as_view(), name='user-profile'),
+
+    # ------------------------------------------------------------------
+    # Maxsus Admin endpointlari
+    # ------------------------------------------------------------------
+    
+    # Barcha foydalanuvchilar ro'yxati (faqat Admin/Staff uchun)
+    # GET /api/admin/users/
+    path('admin/users/', AdminUserListView.as_view(), name='admin-user-list'),
+
+    # Foydalanuvchini bloklash / blokdan chiqarish
+    # POST /api/admin/users/<id>/toggle-status/
+    path('admin/users/<int:pk>/toggle-status/', ToggleUserStatusView.as_view(), name='admin-user-toggle-status'),
 
     # ------------------------------------------------------------------
     # Startup (loyiha) endpointlari

@@ -1,6 +1,9 @@
 from rest_framework import generics, permissions, filters
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
 
-from .models import Startup
+from .models import Startup, CustomUser
 from .serializers import StartupSerializer, UserRegistrationSerializer, UserSerializer
 
 
@@ -32,6 +35,39 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         # PK yoki lookup field kerak emas — har doim token egasi qaytariladi
         return self.request.user
+
+
+class AdminUserListView(generics.ListAPIView):
+    """
+    GET /api/admin/users/ — barcha foydalanuvchilar ro'yxatini qaytaradi.
+    
+    Faqat staff va superuser ruxsatiga ega bo'lgan foydalanuvchilar uchun.
+    Eng oxirgi qo'shilgan foydalanuvchilar birinchi bo'lib chiqadi.
+    """
+    queryset = CustomUser.objects.all().order_by('-date_joined')
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAdminUser]
+
+
+class ToggleUserStatusView(APIView):
+    """
+    POST /api/admin/users/<pk>/toggle-status/
+    
+    Foydalanuvchining is_active (faol/bloklangan) holatini o'zgartiradi.
+    Faqat admin/staff foydalana oladi.
+    """
+    permission_classes = [permissions.IsAdminUser]
+
+    def post(self, request, pk):
+        user = get_object_or_404(CustomUser, pk=pk)
+        
+        # Superadminni tasodifan bloklab qo'ymaslik uchun kichik himoya
+        if user.is_superuser:
+            return Response({"error": "Superuser holatini o'zgartirib bo'lmaydi!"}, status=400)
+            
+        user.is_active = not user.is_active
+        user.save()
+        return Response({"is_active": user.is_active})
 
 
 class StartupListCreateView(generics.ListCreateAPIView):
