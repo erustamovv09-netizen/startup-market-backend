@@ -34,10 +34,11 @@ class UserSerializer(serializers.ModelSerializer):
             'telegram_username',
             'is_staff',       # Admin panel kirish huquqi
             'is_superuser',   # To'liq superadmin huquqi
+            'is_active',      # Faol yoki bloklangan
+            'date_joined',    # Ro'yxatdan o'tgan sanasi
         )
-        # is_staff va is_superuser faqat o'qish uchun —
-        # ularni API orqali o'zgartirib bo'lmaydi (faqat Django admin orqali)
-        read_only_fields = ('id', 'is_staff', 'is_superuser')
+        # Bular faqat o'qish uchun — API orqali o'zgartirib bo'lmaydi
+        read_only_fields = ('id', 'is_staff', 'is_superuser', 'is_active', 'date_joined')
         extra_kwargs = {
             'username': {'required': False},
             'email': {'required': False},
