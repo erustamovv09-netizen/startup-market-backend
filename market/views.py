@@ -49,6 +49,17 @@ class AdminUserListView(generics.ListAPIView):
     permission_classes = [permissions.IsAdminUser]
 
 
+class AdminStartupDeleteView(generics.DestroyAPIView):
+    """
+    DELETE /api/admin/startups/<pk>/delete/
+    
+    Faqat adminlarga ruxsat berilgan bo'lib, istalgan startupni 
+    bazadan butunlay o'chirib tashlash imkonini beradi.
+    """
+    queryset = Startup.objects.all()
+    permission_classes = [permissions.IsAdminUser]
+
+
 class ToggleUserStatusView(APIView):
     """
     POST /api/admin/users/<pk>/toggle-status/
@@ -80,7 +91,7 @@ class StartupListCreateView(generics.ListCreateAPIView):
     """
     queryset = Startup.objects.select_related('owner').all()
     serializer_class = StartupSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
     filter_backends = [filters.SearchFilter]
     # ?search=django     → texnologiya bo'yicha qidiruv
     # ?search=website    → loyiha turi bo'yicha
@@ -88,15 +99,7 @@ class StartupListCreateView(generics.ListCreateAPIView):
     search_fields = ['title', 'tech_stack', 'project_type', 'owner__username']
 
     def perform_create(self, serializer):
-        """
-        JWT autentifikatsiyasi ulangandan so'ng owner avtomatik
-        o'rnatiladi. Hozircha autentifikatsiyadan o'tgan bo'lsa
-        request.user, aks holda None qoladi.
-        """
-        if self.request.user.is_authenticated:
-            serializer.save(owner=self.request.user)
-        else:
-            serializer.save()
+        serializer.save(owner=self.request.user)
 
 
 class StartupDetailView(generics.RetrieveUpdateDestroyAPIView):

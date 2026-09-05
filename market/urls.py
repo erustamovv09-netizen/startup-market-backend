@@ -7,7 +7,8 @@ from .views import (
     UserRegistrationView, 
     UserProfileView, 
     AdminUserListView,
-    ToggleUserStatusView
+    ToggleUserStatusView,
+    AdminStartupDeleteView
 )
 
 urlpatterns = [
@@ -42,6 +43,10 @@ urlpatterns = [
     # Foydalanuvchini bloklash / blokdan chiqarish
     # POST /api/admin/users/<id>/toggle-status/
     path('admin/users/<int:pk>/toggle-status/', ToggleUserStatusView.as_view(), name='admin-user-toggle-status'),
+
+    # Admin tomonidan istalgan startupni o'chirish
+    # DELETE /api/admin/startups/<id>/delete/
+    path('admin/startups/<int:pk>/delete/', AdminStartupDeleteView.as_view(), name='admin-startup-delete'),
 
     # ------------------------------------------------------------------
     # Startup (loyiha) endpointlari

@@ -66,8 +66,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ('id', 'username', 'first_name', 'email', 'password', 'phone_number', 'telegram_username')
         extra_kwargs = {
-            'first_name': {'required': False},  # Ixtiyoriy — keyin profildan o'zgartiriladi
-            'email': {'required': False},
+            'first_name': {'required': True, 'allow_blank': False},
+            'email': {'required': True, 'allow_blank': False},
             'phone_number': {'required': False},
             'telegram_username': {'required': False},
         }
