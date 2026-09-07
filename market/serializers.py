@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import CustomUser, Startup
+from .models import CustomUser, Startup, Message
 
 
 class OwnerSerializer(serializers.ModelSerializer):
@@ -121,6 +121,9 @@ class StartupSerializer(serializers.ModelSerializer):
             'project_type_display',
             'demo_link',
             'github_link',
+            'bot_username',
+            'play_store_link',
+            'app_store_link',
             'is_premium',
             'created_at',
         )
@@ -128,4 +131,30 @@ class StartupSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             # owner maydoni yozishda ixtiyoriy — view'da avtomatik o'rnatiladi
             'owner': {'required': False},
+        }
+
+
+class MessageSerializer(serializers.ModelSerializer):
+    """
+    Foydalanuvchilar orasidagi xabarlar uchun serializer.
+    `sender` avtomatik tarzda view orqali saqlanadi, shuning uchun faqat o'qish uchun qilingan.
+    """
+    sender_info = OwnerSerializer(source='sender', read_only=True)
+    receiver_info = OwnerSerializer(source='receiver', read_only=True)
+    
+    class Meta:
+        model = Message
+        fields = (
+            'id',
+            'sender',          # view orqali to'ldiriladi
+            'sender_info',     # frontend uchun to'liqroq ma'lumot
+            'receiver',        # POST da qabul qiluvchi ID si
+            'receiver_info',
+            'startup',         # ixtiyoriy, qaysi loyiha ekanligini bildirish uchun
+            'content',
+            'created_at',
+        )
+        read_only_fields = ('id', 'sender', 'sender_info', 'receiver_info', 'created_at')
+        extra_kwargs = {
+            'sender': {'required': False},
         }

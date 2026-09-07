@@ -1,4 +1,5 @@
 from django.urls import path
+# pyrefly: ignore [missing-import]
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from .views import (
@@ -9,7 +10,10 @@ from .views import (
     AdminUserListView,
     ToggleUserStatusView,
     AdminStartupDeleteView,
-    ToggleStartupPremiumView
+    ToggleStartupPremiumView,
+    MyStartupListView,
+    UserStartupDeleteView,
+    MessageListCreateView
 )
 
 urlpatterns = [
@@ -54,7 +58,17 @@ urlpatterns = [
     path('admin/startups/<int:pk>/toggle-premium/', ToggleStartupPremiumView.as_view(), name='admin-startup-toggle-premium'),
 
     # ------------------------------------------------------------------
-    # Startup (loyiha) endpointlari
+    # Foydalanuvchining shaxsiy (My) Startup endpointlari
+    # ------------------------------------------------------------------
+    
+    # GET /api/my-startups/
+    path('my-startups/', MyStartupListView.as_view(), name='my-startups'),
+
+    # DELETE /api/my-startups/<id>/delete/
+    path('my-startups/<int:pk>/delete/', UserStartupDeleteView.as_view(), name='user-startup-delete'),
+
+    # ------------------------------------------------------------------
+    # Umumiy Startup (loyiha) endpointlari
     # ------------------------------------------------------------------
 
     # GET (ro'yxat) va POST (yaratish)
@@ -62,4 +76,11 @@ urlpatterns = [
 
     # GET (ko'rish), PUT/PATCH (yangilash), DELETE (o'chirish)
     path('startups/<int:pk>/', StartupDetailView.as_view(), name='startup-detail'),
+
+    # ------------------------------------------------------------------
+    # Chat (Xabarlar) endpointi
+    # ------------------------------------------------------------------
+    # GET /api/messages/ (Mening xabarlarim)
+    # POST /api/messages/ (Yangi xabar yuborish)
+    path('messages/', MessageListCreateView.as_view(), name='messages'),
 ]

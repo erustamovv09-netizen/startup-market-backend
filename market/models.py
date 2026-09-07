@@ -38,6 +38,8 @@ class Startup(models.Model):
         WEBSITE = 'website', 'Veb-sayt'
         TELEGRAM_BOT = 'telegram_bot', 'Telegram Bot'
         MOBILE_APP = 'mobile_app', 'Mobil Ilova'
+        SAAS = 'saas', 'SaaS'
+        ECOMMERCE = 'ecommerce', 'E-Commerce'
         OTHER = 'other', 'Boshqa'
 
     owner = models.ForeignKey(
@@ -79,6 +81,25 @@ class Startup(models.Model):
         null=True,
         verbose_name="GitHub havolasi"
     )
+    # ----------------------------------------------------
+    # Maxsus loyiha turlari (Bot, Mobil Ilova) uchun havolalar
+    # ----------------------------------------------------
+    bot_username = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name="Bot Username"
+    )
+    play_store_link = models.URLField(
+        blank=True,
+        null=True,
+        verbose_name="Play Store Havolasi"
+    )
+    app_store_link = models.URLField(
+        blank=True,
+        null=True,
+        verbose_name="App Store Havolasi"
+    )
     is_premium = models.BooleanField(
         default=False,
         verbose_name="Premium e'lon"
@@ -95,3 +116,40 @@ class Startup(models.Model):
 
     def __str__(self):
         return f"{self.title} — {self.owner.username} ({self.get_project_type_display()})"
+
+
+class Message(models.Model):
+    """
+    Foydalanuvchilar o'rtasidagi ichki xabarlar (Chat) tizimi.
+    Xabarlar ma'lum bir Startup haqida bo'lishi mumkin.
+    """
+    sender = models.ForeignKey(
+        CustomUser, 
+        on_delete=models.CASCADE, 
+        related_name='sent_messages',
+        verbose_name="Yuboruvchi"
+    )
+    receiver = models.ForeignKey(
+        CustomUser, 
+        on_delete=models.CASCADE, 
+        related_name='received_messages',
+        verbose_name="Qabul qiluvchi"
+    )
+    startup = models.ForeignKey(
+        Startup, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='messages',
+        verbose_name="Tegishli Startup"
+    )
+    content = models.TextField(verbose_name="Xabar matni")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Yuborilgan vaqt")
+
+    class Meta:
+        verbose_name = "Xabar"
+        verbose_name_plural = "Xabarlar"
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"{self.sender.username} -> {self.receiver.username} ({self.created_at.strftime('%Y-%m-%d %H:%M')})"

@@ -2,9 +2,15 @@ from rest_framework import generics, permissions, filters
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 
-from .models import Startup, CustomUser
-from .serializers import StartupSerializer, UserRegistrationSerializer, UserSerializer
+from .models import Startup, CustomUser, Message
+from .serializers import (
+    StartupSerializer, 
+    UserRegistrationSerializer, 
+    UserSerializer,
+    MessageSerializer
+)
 
 
 class UserRegistrationView(generics.CreateAPIView):
@@ -98,6 +104,33 @@ class ToggleUserStatusView(APIView):
         return Response({"is_active": user.is_active})
 
 
+class MyStartupListView(generics.ListAPIView):
+    """
+    GET /api/my-startups/
+    
+    Faqat joriy tizimga kirgan foydalanuvchiga tegishli startuplarni qaytaradi.
+    """
+    serializer_class = StartupSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Startup.objects.filter(owner=self.request.user)
+
+
+class UserStartupDeleteView(generics.DestroyAPIView):
+    """
+    DELETE /api/my-startups/<pk>/delete/
+    
+    Foydalanuvchi o'ziga tegishli bo'lgan startupni o'chirib tashlaydi.
+    Boshqa odamning startupini o'chirishga ruxsat yo'q, chunki
+    `get_queryset()` faqat shaxsiy startuplarni qaytaradi.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Startup.objects.filter(owner=self.request.user)
+
+
 class StartupListCreateView(generics.ListCreateAPIView):
     """
     GET  /api/startups/  — barcha startuplar ro'yxati (hamma ko'ra oladi)
@@ -133,3 +166,23 @@ class StartupDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Startup.objects.select_related('owner').all()
     serializer_class = StartupSerializer
     permission_classes = [permissions.AllowAny]
+
+
+class MessageListCreateView(generics.ListCreateAPIView):
+    """
+    GET  /api/messages/  — Tizimga kirgan foydalanuvchining barcha xabarlarini qaytaradi
+    POST /api/messages/  — Boshqa foydalanuvchiga yangi xabar yuborish
+    """
+    serializer_class = MessageSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Foydalanuvchi qabul qiluvchi yoxud yuboruvchi bo'lgan xabarlarni qaytaramiz
+        user = self.request.user
+        return Message.objects.filter(
+            Q(sender=user) | Q(receiver=user)
+        ).select_related('sender', 'receiver', 'startup').order_by('created_at')
+
+    def perform_create(self, serializer):
+        # Yuboruvchini avtomatik tarzda joriy foydalanuvchi etib belgilaymiz
+        serializer.save(sender=self.request.user)
