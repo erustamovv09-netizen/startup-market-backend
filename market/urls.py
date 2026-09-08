@@ -13,6 +13,7 @@ from .views import (
     ToggleStartupPremiumView,
     MyStartupListView,
     UserStartupDeleteView,
+    UserStartupUpdateView,
     MessageListCreateView
 )
 
@@ -66,6 +67,9 @@ urlpatterns = [
 
     # DELETE /api/my-startups/<id>/delete/
     path('my-startups/<int:pk>/delete/', UserStartupDeleteView.as_view(), name='user-startup-delete'),
+
+    # PUT/PATCH /api/my-startups/<id>/edit/  (faqat 15 daqiqa ichida)
+    path('my-startups/<int:pk>/edit/', UserStartupUpdateView.as_view(), name='user-startup-edit'),
 
     # ------------------------------------------------------------------
     # Umumiy Startup (loyiha) endpointlari

@@ -1,8 +1,15 @@
-from rest_framework import generics, permissions, filters
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
+from datetime import timedelta
+
+from django.contrib.auth import get_user_model
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from rest_framework import generics, permissions, filters
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+User = get_user_model()
 
 from .models import Startup, CustomUser, Message
 from .serializers import (
@@ -84,24 +91,13 @@ class ToggleStartupPremiumView(APIView):
 
 
 class ToggleUserStatusView(APIView):
-    """
-    POST /api/admin/users/<pk>/toggle-status/
-    
-    Foydalanuvchining is_active (faol/bloklangan) holatini o'zgartiradi.
-    Faqat admin/staff foydalana oladi.
-    """
     permission_classes = [permissions.IsAdminUser]
 
     def post(self, request, pk):
-        user = get_object_or_404(CustomUser, pk=pk)
-        
-        # Superadminni tasodifan bloklab qo'ymaslik uchun kichik himoya
-        if user.is_superuser:
-            return Response({"error": "Superuser holatini o'zgartirib bo'lmaydi!"}, status=400)
-            
+        user = get_object_or_404(User, pk=pk)
         user.is_active = not user.is_active
         user.save()
-        return Response({"is_active": user.is_active})
+        return Response({"id": user.id, "is_active": user.is_active})
 
 
 class MyStartupListView(generics.ListAPIView):
@@ -129,6 +125,31 @@ class UserStartupDeleteView(generics.DestroyAPIView):
 
     def get_queryset(self):
         return Startup.objects.filter(owner=self.request.user)
+
+
+class UserStartupUpdateView(generics.UpdateAPIView):
+    """
+    PUT/PATCH /api/my-startups/<pk>/edit/
+
+    Foydalanuvchi o'ziga tegishli startupni faqat yaratilganidan
+    keyin 15 daqiqa ichida tahrirlashi mumkin.
+    Muddatdan o'tgan bo'lsa, 403 PermissionDenied xatosi qaytariladi.
+    """
+    serializer_class = StartupSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Faqat joriy foydalanuvchiga tegishli startuplarni qaytaramiz
+        return Startup.objects.filter(owner=self.request.user)
+
+    def perform_update(self, serializer):
+        startup = serializer.instance
+        # Yaratilgan vaqtdan beri o'tgan vaqtni tekshiramiz
+        if timezone.now() - startup.created_at > timedelta(minutes=15):
+            raise PermissionDenied(
+                "E'lonni faqat yaratilganidan keyin 15 daqiqa ichida tahrirlash mumkin."
+            )
+        serializer.save()
 
 
 class StartupListCreateView(generics.ListCreateAPIView):
