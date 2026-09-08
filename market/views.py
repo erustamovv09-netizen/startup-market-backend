@@ -73,6 +73,19 @@ class AdminStartupDeleteView(generics.DestroyAPIView):
     permission_classes = [permissions.IsAdminUser]
 
 
+class AdminStartupUpdateView(generics.UpdateAPIView):
+    """
+    PUT/PATCH /api/admin/startups/<pk>/edit/
+
+    Admin istalgan startupni istalgan vaqtda tahrirlashi mumkin.
+    15 daqiqalik vaqt chekovi bu yerda qo'llanilmaydi.
+    Faqat admin/staff foydalana oladi (IsAdminUser).
+    """
+    serializer_class = StartupSerializer
+    permission_classes = [permissions.IsAdminUser]
+    queryset = Startup.objects.all()
+
+
 class ToggleStartupPremiumView(APIView):
     """
     POST /api/admin/startups/<pk>/toggle-premium/

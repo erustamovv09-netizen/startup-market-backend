@@ -10,6 +10,7 @@ from .views import (
     AdminUserListView,
     ToggleUserStatusView,
     AdminStartupDeleteView,
+    AdminStartupUpdateView,
     ToggleStartupPremiumView,
     MyStartupListView,
     UserStartupDeleteView,
@@ -53,6 +54,10 @@ urlpatterns = [
     # Admin tomonidan istalgan startupni o'chirish
     # DELETE /api/admin/startups/<id>/delete/
     path('admin/startups/<int:pk>/delete/', AdminStartupDeleteView.as_view(), name='admin-startup-delete'),
+
+    # Admin tomonidan istalgan startupni vaqt chegarasisiz tahrirlash
+    # PUT/PATCH /api/admin/startups/<id>/edit/
+    path('admin/startups/<int:pk>/edit/', AdminStartupUpdateView.as_view(), name='admin-startup-edit'),
 
     # Admin tomonidan istalgan startupning premium holatini o'zgartirish
     # POST /api/admin/startups/<id>/toggle-premium/
