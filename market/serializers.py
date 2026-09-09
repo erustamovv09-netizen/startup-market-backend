@@ -2,6 +2,14 @@ from rest_framework import serializers
 
 from .models import CustomUser, Startup, Message
 
+# Taqiqlangan so'zlar ro'yxati — kerak bo'lsa bu yerga yangi so'zlar qo'shing
+BAD_WORDS = [
+    'ahmoq',
+    'jinni',
+    'haqorat',
+    'yomon_soz',
+]
+
 
 class OwnerSerializer(serializers.ModelSerializer):
     """
@@ -138,6 +146,7 @@ class MessageSerializer(serializers.ModelSerializer):
     """
     Foydalanuvchilar orasidagi xabarlar uchun serializer.
     `sender` avtomatik tarzda view orqali saqlanadi, shuning uchun faqat o'qish uchun qilingan.
+    Xabar matni BAD_WORDS ro'yxati orqali filtrlangan — haqoratli so'z topilsa 400 xatosi qaytariladi.
     """
     sender_info = OwnerSerializer(source='sender', read_only=True)
     receiver_info = OwnerSerializer(source='receiver', read_only=True)
@@ -158,3 +167,16 @@ class MessageSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'sender': {'required': False},
         }
+
+    def validate_content(self, value):
+        """
+        Xabar matni yuborilishidan oldin haqoratli so'zlarga tekshiriladi.
+        Tekshiruv katta-kichik harfga sezgir emas (casefold ishlatiladi).
+        """
+        text_lower = value.casefold()
+        for bad_word in BAD_WORDS:
+            if bad_word.casefold() in text_lower:
+                raise serializers.ValidationError(
+                    "Iltimos, xabarda haqoratli so'zlardan foydalanmang!"
+                )
+        return value

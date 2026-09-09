@@ -33,7 +33,7 @@ def send_telegram_notification(startup):
     # Har bir maydon xavfsiz olinadi — yo'q bo'lsa default qiymat qaytaradi
     title    = getattr(startup, 'title', "Noma'lum")
     price    = getattr(startup, 'price', '0')
-    desc     = str(getattr(startup, 'description', ''))[:150]
+    desc     = str(getattr(startup, 'description', ''))
     demo     = getattr(startup, 'demo_link', '')   or "Yo'q"
     github   = getattr(startup, 'github_link', '') or "Yo'q"
     username = startup.owner.username if getattr(startup, 'owner', None) else "Noma'lum"
@@ -50,7 +50,7 @@ def send_telegram_notification(startup):
         f"📌 <b>Loyiha nomi:</b> {title}\n"
         f"📂 <b>Kategoriya:</b> {category}\n"
         f"💰 <b>Narxi:</b> ${price}\n"
-        f"📝 <b>Tavsif:</b> {desc}...\n\n"
+        f"📝 <b>Tavsif:</b> {desc}\n\n"
         f"🔗 <b>Demo:</b> {demo}\n"
         f"🐱 <b>GitHub:</b> {github}\n\n"
         f"👤 <b>Joyladi:</b> @{username}\n"
@@ -267,3 +267,46 @@ class MessageListCreateView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         # Yuboruvchini avtomatik tarzda joriy foydalanuvchi etib belgilaymiz
         serializer.save(sender=self.request.user)
+
+
+class ContactMessageView(APIView):
+    """
+    POST /api/contact/
+
+    Frontend saytidagi murojaat formasidan kelgan xabarni
+    admin Telegram botiga HTML formatida yuboradi.
+    Autentifikatsiya talab qilinmaydi — har kim murojaat qila oladi.
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        name    = request.data.get('name', '').strip()
+        email   = request.data.get('email', '').strip()
+        message = request.data.get('message', '').strip()
+
+        # Majburiy maydonlarni tekshirish
+        if not name or not email or not message:
+            return Response(
+                {'error': 'name, email va message maydonlari to\'ldirilishi shart.'},
+                status=400
+            )
+
+        bot_token = "8977368056:AAECjvzo9X3bL639i21pN-QcRrf_Ou-hueg"
+        chat_id   = "8273165378"
+
+        text = (
+            f"\ud83d\udce9 <b>Saytdan yangi murojaat!</b>\n\n"
+            f"\ud83d\udc64 <b>Ism:</b> {name}\n"
+            f"\ud83d\udce7 <b>Email:</b> {email}\n"
+            f"\ud83d\udcac <b>Xabar:</b> {message}"
+        )
+
+        try:
+            requests.post(
+                f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                data={'chat_id': chat_id, 'text': text, 'parse_mode': 'HTML'}
+            )
+        except Exception as e:
+            print("Telegram murojaat xatoligi:", e)
+
+        return Response({'success': True})

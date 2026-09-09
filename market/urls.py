@@ -15,7 +15,8 @@ from .views import (
     MyStartupListView,
     UserStartupDeleteView,
     UserStartupUpdateView,
-    MessageListCreateView
+    MessageListCreateView,
+    ContactMessageView
 )
 
 urlpatterns = [
@@ -92,4 +93,10 @@ urlpatterns = [
     # GET /api/messages/ (Mening xabarlarim)
     # POST /api/messages/ (Yangi xabar yuborish)
     path('messages/', MessageListCreateView.as_view(), name='messages'),
+
+    # ------------------------------------------------------------------
+    # Murojaat (Contact Form) endpointi
+    # ------------------------------------------------------------------
+    # POST /api/contact/  — frontend formasidan kelgan murojaatni Telegram botga yuboradi
+    path('contact/', ContactMessageView.as_view(), name='contact'),
 ]
