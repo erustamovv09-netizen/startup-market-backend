@@ -21,24 +21,46 @@ from .serializers import (
 )
 
 
-def send_telegram_notification(startup_title, startup_price, owner_username):
+def send_telegram_notification(startup):
     """
-    Yangi startup yaratilganda admin Telegram'ga xabar yuboradi.
-    Tarmoq xatoligi yuz bersa, server ishini to'xtatmaslik uchun
-    xatoni tutib, faqat konsolga chiqarib qo'yadi.
+    Yangi startup yaratilganda admin Telegram'ga HTML formatida xabar yuboradi.
+    getattr() yordamida barcha maydonlar xavfsiz o'qiladi —
+    birorta maydon None bo'lsa ham server crash bo'lmaydi.
     """
     bot_token = "8977368056:AAECjvzo9X3bL639i21pN-QcRrf_Ou-hueg"
     chat_id = "8273165378"
+
+    # Har bir maydon xavfsiz olinadi — yo'q bo'lsa default qiymat qaytaradi
+    title    = getattr(startup, 'title', "Noma'lum")
+    price    = getattr(startup, 'price', '0')
+    desc     = str(getattr(startup, 'description', ''))[:150]
+    demo     = getattr(startup, 'demo_link', '')   or "Yo'q"
+    github   = getattr(startup, 'github_link', '') or "Yo'q"
+    username = startup.owner.username if getattr(startup, 'owner', None) else "Noma'lum"
+    email    = startup.owner.email    if getattr(startup, 'owner', None) else "Noma'lum"
+
+    # project_type → o'qilishi qulay nomga (Veb-sayt, Telegram Bot, ...) aylantiriladi
+    try:
+        category = startup.get_project_type_display()
+    except Exception:
+        category = getattr(startup, 'project_type', 'Boshqa')
+
     text = (
-        f"🚀 Saytga yangi e'lon joylandi!\n\n"
-        f"📌 Loyiha nomi: {startup_title}\n"
-        f"💰 Narxi: ${startup_price}\n"
-        f"👤 Joyladi: @{owner_username}\n\n"
-        f"Iltimos, admin panelga kirib tekshiring."
+        f"🚀 <b>Saytga yangi e'lon joylandi!</b>\n\n"
+        f"📌 <b>Loyiha nomi:</b> {title}\n"
+        f"📂 <b>Kategoriya:</b> {category}\n"
+        f"💰 <b>Narxi:</b> ${price}\n"
+        f"📝 <b>Tavsif:</b> {desc}...\n\n"
+        f"🔗 <b>Demo:</b> {demo}\n"
+        f"🐱 <b>GitHub:</b> {github}\n\n"
+        f"👤 <b>Joyladi:</b> @{username}\n"
+        f"📧 <b>Email:</b> {email}\n\n"
+        f"⚙️ <i>Iltimos, admin paneldan tekshiring.</i>"
     )
+
     url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
     try:
-        requests.post(url, data={'chat_id': chat_id, 'text': text})
+        requests.post(url, data={'chat_id': chat_id, 'text': text, 'parse_mode': 'HTML'})
     except Exception as e:
         print("Telegram bot xatoligi:", e)
 
@@ -208,7 +230,7 @@ class StartupListCreateView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         startup = serializer.save(owner=self.request.user)
         print("DIQQAT: E'lon saqlandi, botga xabar ketmoqda...")
-        send_telegram_notification(startup.title, startup.price, self.request.user.username)
+        send_telegram_notification(startup)
 
 
 class StartupDetailView(generics.RetrieveUpdateDestroyAPIView):
