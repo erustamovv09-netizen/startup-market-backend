@@ -1,3 +1,4 @@
+import requests
 from datetime import timedelta
 
 from django.contrib.auth import get_user_model
@@ -18,6 +19,28 @@ from .serializers import (
     UserSerializer,
     MessageSerializer
 )
+
+
+def send_telegram_notification(startup_title, startup_price, owner_username):
+    """
+    Yangi startup yaratilganda admin Telegram'ga xabar yuboradi.
+    Tarmoq xatoligi yuz bersa, server ishini to'xtatmaslik uchun
+    xatoni tutib, faqat konsolga chiqarib qo'yadi.
+    """
+    bot_token = "8977368056:AAECjvzo9X3bL639i21pN-QcRrf_Ou-hueg"
+    chat_id = "8273165378"
+    text = (
+        f"🚀 Saytga yangi e'lon joylandi!\n\n"
+        f"📌 Loyiha nomi: {startup_title}\n"
+        f"💰 Narxi: ${startup_price}\n"
+        f"👤 Joyladi: @{owner_username}\n\n"
+        f"Iltimos, admin panelga kirib tekshiring."
+    )
+    url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+    try:
+        requests.post(url, data={'chat_id': chat_id, 'text': text})
+    except Exception as e:
+        print("Telegram bot xatoligi:", e)
 
 
 class UserRegistrationView(generics.CreateAPIView):
@@ -73,7 +96,7 @@ class AdminStartupDeleteView(generics.DestroyAPIView):
     permission_classes = [permissions.IsAdminUser]
 
 
-class AdminStartupUpdateView(generics.UpdateAPIView):
+class AdminStartupUpdateView(generics.RetrieveUpdateAPIView):
     """
     PUT/PATCH /api/admin/startups/<pk>/edit/
 
@@ -140,7 +163,7 @@ class UserStartupDeleteView(generics.DestroyAPIView):
         return Startup.objects.filter(owner=self.request.user)
 
 
-class UserStartupUpdateView(generics.UpdateAPIView):
+class UserStartupUpdateView(generics.RetrieveUpdateAPIView):
     """
     PUT/PATCH /api/my-startups/<pk>/edit/
 
@@ -183,7 +206,9 @@ class StartupListCreateView(generics.ListCreateAPIView):
     search_fields = ['title', 'tech_stack', 'project_type', 'owner__username']
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+        startup = serializer.save(owner=self.request.user)
+        print("DIQQAT: E'lon saqlandi, botga xabar ketmoqda...")
+        send_telegram_notification(startup.title, startup.price, self.request.user.username)
 
 
 class StartupDetailView(generics.RetrieveUpdateDestroyAPIView):
