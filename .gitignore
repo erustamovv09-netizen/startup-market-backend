@@ -1,0 +1,39 @@
+# ============================================================
+# .gitignore — GitHubga yuklanmaydigan fayllar
+# ============================================================
+
+# Maxfiy sozlamalar — HECH QACHON commitlanmasin!
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+
+# Virtual muhit
+venv/
+env/
+.venv/
+.env/
+
+# Django
+db.sqlite3
+*.sqlite3
+media/
+staticfiles/
+static/
+
+# IDE va tizim fayllari
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.swo
+
+# Log fayllar
+*.log
+logs/

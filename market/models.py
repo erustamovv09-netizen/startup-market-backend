@@ -109,6 +109,10 @@ class Startup(models.Model):
         default=False,
         verbose_name="Premium e'lon"
     )
+    is_sold = models.BooleanField(
+        default=False,
+        verbose_name="Sotildi"
+    )
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name="Yaratilgan sana"

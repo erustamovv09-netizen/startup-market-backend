@@ -37,10 +37,10 @@ class StartupAdmin(admin.ModelAdmin):
     - search_fields: nom va egasining @username bo'yicha qidiruv
     - list_editable: is_premium ni ro'yxatdan to'g'ridan-to'g'ri o'zgartirish
     """
-    list_display = ('title', 'owner', 'price', 'project_type', 'is_premium', 'created_at')
-    list_filter = ('project_type', 'created_at')
+    list_display  = ('title', 'owner', 'price', 'project_type', 'is_premium', 'is_sold', 'created_at')
+    list_filter   = ('project_type', 'is_premium', 'is_sold', 'created_at')
     search_fields = ('title', 'owner__username')
-    list_editable = ('is_premium',)
-    ordering = ('-created_at',)
+    list_editable = ('is_premium', 'is_sold')
+    ordering      = ('-created_at',)
     readonly_fields = ('created_at',)
     autocomplete_fields = ('owner',)  # owner qidiruvi uchun autocomplete

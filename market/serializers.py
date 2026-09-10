@@ -7,6 +7,10 @@ BAD_WORDS = [
     'ahmoq',
     'jinni',
     'haqorat',
+    'yiban',
+    'balbayop',
+    'kot',
+    
     'yomon_soz',
 ]
 

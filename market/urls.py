@@ -16,7 +16,9 @@ from .views import (
     UserStartupDeleteView,
     UserStartupUpdateView,
     MessageListCreateView,
-    ContactMessageView
+    ContactMessageView,
+    AdminDashboardStatsView,
+    AdvancedAnalyticsView
 )
 
 urlpatterns = [
@@ -44,6 +46,14 @@ urlpatterns = [
     # Maxsus Admin endpointlari
     # ------------------------------------------------------------------
     
+    # Admin Panel Statistikasi (Dashboard)
+    # GET /api/admin/stats/
+    path('admin/stats/', AdminDashboardStatsView.as_view(), name='admin-stats'),
+
+    # Ilg'or analitika (Advanced Stats)
+    # GET /api/admin/advanced-stats/?filter=all|yearly|monthly
+    path('admin/advanced-stats/', AdvancedAnalyticsView.as_view(), name='admin-advanced-stats'),
+
     # Barcha foydalanuvchilar ro'yxati (faqat Admin/Staff uchun)
     # GET /api/admin/users/
     path('admin/users/', AdminUserListView.as_view(), name='admin-user-list'),
