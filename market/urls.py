@@ -18,7 +18,8 @@ from .views import (
     MessageListCreateView,
     ContactMessageView,
     AdminDashboardStatsView,
-    AdvancedAnalyticsView
+    AdvancedAnalyticsView,
+    GoogleLoginView
 )
 
 urlpatterns = [
@@ -29,6 +30,10 @@ urlpatterns = [
     # Yangi foydalanuvchi ro'yxatdan o'tkazish
     # POST /api/register/  →  { username, password, email? }
     path('register/', UserRegistrationView.as_view(), name='user-register'),
+
+    # Google Login
+    # POST /api/google-login/ → { email, name } => { access, refresh }
+    path('google-login/', GoogleLoginView.as_view(), name='google-login'),
 
     # Login: username va password bilan access + refresh token olish
     # POST /api/login/  →  { username, password }  =>  { access, refresh }

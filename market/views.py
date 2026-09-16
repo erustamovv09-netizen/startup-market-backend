@@ -11,6 +11,7 @@ from rest_framework import generics, permissions, filters
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 
 User = get_user_model()
 
@@ -441,4 +442,50 @@ class AdvancedAnalyticsView(APIView):
                 'total_active': active_qs.count()
             },
             'chart_data': chart_data
+        })
+
+
+class GoogleLoginView(APIView):
+    """
+    POST /api/google-login/
+    
+    Frontend (NextAuth) orqali kiritilgan Google foydalanuvchisining
+    email va ismini qabul qiladi. Agar bunday foydalanuvchi yo'q bo'lsa,
+    yaratadi (parolsiz qilib). Va unga SimpleJWT (access, refresh) qaytaradi.
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        email = request.data.get('email')
+        name = request.data.get('name')
+        
+        if not email:
+            return Response({'error': 'Email kiritilishi shart.'}, status=400)
+            
+        # Email bo'yicha foydalanuvchini qidiramiz yoki yangi yaratamiz
+        try:
+            user = CustomUser.objects.get(email=email)
+        except CustomUser.DoesNotExist:
+            # Username majburiy bo'lgani uchun emaildan prefixni olamiz
+            username = email.split('@')[0]
+            # Agar shu username band bo'lsa (masalan, boshqa domendagi xuddi shunday email),
+            # tasodifiy son qo'shamiz (yoki hozircha faqat shu username)
+            if CustomUser.objects.filter(username=username).exists():
+                import uuid
+                username = f"{username}_{str(uuid.uuid4())[:6]}"
+                
+            user = CustomUser.objects.create(
+                email=email,
+                username=username,
+                first_name=name or ''
+            )
+            user.set_unusable_password()
+            user.save()
+            
+        # User uchun tokenlar generatsiya qilamiz
+        refresh = RefreshToken.for_user(user)
+        
+        return Response({
+            'access': str(refresh.access_token),
+            'refresh': str(refresh)
         })
