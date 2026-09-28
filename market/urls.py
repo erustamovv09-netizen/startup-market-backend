@@ -16,6 +16,8 @@ from .views import (
     UserStartupDeleteView,
     UserStartupUpdateView,
     MessageListCreateView,
+    MarkMessagesReadView,
+    UnreadCountView,
     ContactMessageView,
     AdminDashboardStatsView,
     AdvancedAnalyticsView,
@@ -36,8 +38,8 @@ urlpatterns = [
     path('google-login/', GoogleLoginView.as_view(), name='google-login'),
 
     # Login: username va password bilan access + refresh token olish
-    # POST /api/login/  →  { username, password }  =>  { access, refresh }
-    path('login/', TokenObtainPairView.as_view(), name='token-obtain-pair'),
+    # POST /api/token/  →  { username, password }  =>  { access, refresh }
+    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
 
     # Access token muddati tugaganda refresh token bilan yangilash
     # POST /api/token/refresh/  →  { refresh }  =>  { access }
@@ -108,6 +110,12 @@ urlpatterns = [
     # GET /api/messages/ (Mening xabarlarim)
     # POST /api/messages/ (Yangi xabar yuborish)
     path('messages/', MessageListCreateView.as_view(), name='messages'),
+
+    # POST /api/messages/mark-read/ — O'qilgan deb belgilash
+    path('messages/mark-read/', MarkMessagesReadView.as_view(), name='messages-mark-read'),
+
+    # GET /api/messages/unread/ — O'qilmagan xabarlar soni
+    path('messages/unread/', UnreadCountView.as_view(), name='messages-unread'),
 
     # ------------------------------------------------------------------
     # Murojaat (Contact Form) endpointi

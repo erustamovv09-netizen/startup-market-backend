@@ -52,10 +52,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    # CorsMiddleware CommonMiddleware dan OLDIN bo'lishi shart
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -133,8 +132,15 @@ STATIC_URL = 'static/'
 # -------------------------------------------------------
 # CORS sozlamalari (Next.js frontend bilan ishlash uchun)
 # -------------------------------------------------------
-CORS_ALLOW_ALL_ORIGINS = True  # Faqat development uchun!
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+ALLOWED_HOSTS = ['*']
 
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:3000",
+    "http://localhost:3000",
+    "http://10.138.183.98:3000",
+]
 # -------------------------------------------------------
 # Maxsus foydalanuvchi modeli
 # -------------------------------------------------------

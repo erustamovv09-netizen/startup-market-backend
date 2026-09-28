@@ -153,6 +153,7 @@ class Message(models.Model):
         verbose_name="Tegishli Startup"
     )
     content = models.TextField(verbose_name="Xabar matni")
+    is_read = models.BooleanField(default=False, verbose_name="O'qilganmi")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Yuborilgan vaqt")
 
     class Meta:

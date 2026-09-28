@@ -228,7 +228,7 @@ class StartupListCreateView(generics.ListCreateAPIView):
     """
     queryset = Startup.objects.select_related('owner').all()
     serializer_class = StartupSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     filter_backends = [filters.SearchFilter]
     # ?search=django     → texnologiya bo'yicha qidiruv
     # ?search=website    → loyiha turi bo'yicha
@@ -276,6 +276,47 @@ class MessageListCreateView(generics.ListCreateAPIView):
         # Yuboruvchini avtomatik tarzda joriy foydalanuvchi etib belgilaymiz
         serializer.save(sender=self.request.user)
 
+
+
+
+class MarkMessagesReadView(APIView):
+    """
+    POST /api/messages/mark-read/
+    
+    Joriy foydalanuvchiga yuborilgan barcha xabarlarni (yoki
+    ma'lum bir yuboruvchidan kelganlarni) o'qilgan deb belgilaydi.
+    
+    Body (ixtiyoriy): { "sender_id": 5 }
+    Agar sender_id berilmasa, barcha o'qilmagan xabarlar belgilanadi.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        sender_id = request.data.get('sender_id')
+
+        qs = Message.objects.filter(receiver=user, is_read=False)
+        if sender_id:
+            qs = qs.filter(sender_id=sender_id)
+
+        updated = qs.update(is_read=True)
+        return Response({'marked_read': updated})
+
+
+class UnreadCountView(APIView):
+    """
+    GET /api/messages/unread/
+    
+    Joriy foydalanuvchiga yuborilgan o'qilmagan xabarlar sonini qaytaradi.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        count = Message.objects.filter(
+            receiver=request.user,
+            is_read=False
+        ).count()
+        return Response({'unread_count': count, 'has_unread': count > 0})
 
 class ContactMessageView(APIView):
     """
