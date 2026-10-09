@@ -1,3 +1,4 @@
+from django.conf import settings
 import os
 import requests
 from datetime import timedelta
@@ -530,3 +531,22 @@ class GoogleLoginView(APIView):
             'access': str(refresh.access_token),
             'refresh': str(refresh)
         })
+
+
+from django.dispatch import receiver
+from django.urls import reverse
+from django_rest_passwordreset.signals import reset_password_token_created
+from django.core.mail import send_mail
+
+@receiver(reset_password_token_created)
+def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
+    reset_url = f"{settings.FRONTEND_URL}/reset-password?token={reset_password_token.key}"
+    
+    email_plaintext_message = f"Salom,\n\nParolingizni tiklash uchun quyidagi havolaga kiring:\n{reset_url}"
+    
+    send_mail(
+        "Parolni tiklash so'rovi",
+        email_plaintext_message,
+        os.environ.get("EMAIL_HOST_USER", "noreply@startupp.shop"),
+        [reset_password_token.user.email]
+    )

@@ -1,3 +1,9 @@
+
+import os
+import certifi
+os.environ['SSL_CERT_FILE'] = certifi.where()
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
 """
 Django settings for core project.
 
@@ -31,7 +37,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-placeholder-change-in
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'startupp.shop,www.startupp.shop,169.58.123.200,localhost,127.0.0.1').split(',')
 
 
 # Application definition
@@ -46,6 +52,7 @@ INSTALLED_APPS = [
     # Third-party
     'rest_framework',
     'rest_framework_simplejwt',
+    'django_rest_passwordreset',
     'corsheaders',
     # Local apps
     'market',
@@ -54,6 +61,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -128,6 +136,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 
 # -------------------------------------------------------
 # CORS sozlamalari (Next.js frontend bilan ishlash uchun)
@@ -140,6 +150,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://localhost:3000",
     "http://10.138.183.98:3000",
+    "https://startupp.shop",
+    "https://www.startupp.shop",
 ]
 # -------------------------------------------------------
 # Maxsus foydalanuvchi modeli
@@ -174,3 +186,18 @@ SIMPLE_JWT = {
 # -------------------------------------------------------
 TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', '')
 TELEGRAM_CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID', '')
+
+
+
+# E-mail settings (Real SMTP)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_SSL_CONTEXT = ssl._create_unverified_context()
+
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')  # pochtangiz
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')  # app password
+
+
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://127.0.0.1:3000')

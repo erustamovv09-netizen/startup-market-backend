@@ -21,5 +21,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # Barcha market app endpointlari /api/ prefiksi ostida
+    path('api/password_reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
     path('api/', include('market.urls')),
 ]
