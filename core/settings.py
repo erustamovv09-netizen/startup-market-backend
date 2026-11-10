@@ -206,8 +206,8 @@ SIMPLE_JWT = {
 # -------------------------------------------------------
 # Telegram Bot konfiguratsiyasi (environment variable'lardan o'qiladi)
 # -------------------------------------------------------
-TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', '')
-TELEGRAM_CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID', '')
+TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', '8977368056:AAECjvzo9X3bL639i21pN-QcRrf_Ou-hueg')
+TELEGRAM_CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID', '8273165378')
 
 
 
@@ -222,4 +222,4 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')  # pochtangiz
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')  # app password
 
 
-FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://127.0.0.1:3000')
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://startupp.shop')

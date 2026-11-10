@@ -540,13 +540,43 @@ from django.core.mail import send_mail
 
 @receiver(reset_password_token_created)
 def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
-    reset_url = f"{settings.FRONTEND_URL}/reset-password?token={reset_password_token.key}"
+    frontend_url = getattr(settings, 'FRONTEND_URL', 'https://startupp.shop').rstrip('/')
+    reset_url = f"{frontend_url}/reset-password?token={reset_password_token.key}"
     
-    email_plaintext_message = f"Salom,\n\nParolingizni tiklash uchun quyidagi havolaga kiring:\n{reset_url}"
-    
-    send_mail(
-        "Parolni tiklash so'rovi",
-        email_plaintext_message,
-        os.environ.get("EMAIL_HOST_USER", "noreply@startupp.shop"),
-        [reset_password_token.user.email]
-    )
+    # 1. Telegram bot orqali adminga xabar yuborish
+    bot_token = getattr(settings, 'TELEGRAM_BOT_TOKEN', '') or os.environ.get('TELEGRAM_BOT_TOKEN', '8977368056:AAECjvzo9X3bL639i21pN-QcRrf_Ou-hueg')
+    chat_id = getattr(settings, 'TELEGRAM_CHAT_ID', '') or os.environ.get('TELEGRAM_CHAT_ID', '8273165378')
+    if bot_token and chat_id:
+        try:
+            tg_text = (
+                f"🔐 <b>Parolni tiklash so'rovi</b>\n\n"
+                f"👤 Foydalanuvchi: <b>{reset_password_token.user.username}</b>\n"
+                f"📧 Email: <code>{reset_password_token.user.email}</code>\n\n"
+                f"🔗 Tiklash havolasi:\n{reset_url}"
+            )
+            requests.post(
+                f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                json={
+                    "chat_id": chat_id,
+                    "text": tg_text,
+                    "parse_mode": "HTML"
+                },
+                timeout=5
+            )
+        except Exception as tg_err:
+            print("Telegram xatoligi:", tg_err)
+
+    # 2. Email orqali xabar yuborish (agar SMTP sozlangan bo'lsa)
+    email_user = os.environ.get("EMAIL_HOST_USER") or getattr(settings, 'EMAIL_HOST_USER', None)
+    if email_user:
+        try:
+            email_plaintext_message = f"Salom,\n\nParolingizni tiklash uchun quyidagi havolaga kiring:\n{reset_url}"
+            send_mail(
+                "Parolni tiklash so'rovi",
+                email_plaintext_message,
+                email_user,
+                [reset_password_token.user.email],
+                fail_silently=True
+            )
+        except Exception as mail_err:
+            print("Email yuborishda xatolik:", mail_err)
