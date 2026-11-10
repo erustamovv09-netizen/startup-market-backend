@@ -93,12 +93,20 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+import sys
 import dj_database_url
+
+DATABASE_URL = os.environ.get('DATABASE_URL')
+DATABASE_URL_UNPOOLED = os.environ.get('DATABASE_URL_UNPOOLED')
+
+# Migratsiyalar paytida PgBouncer (pooler) DDL tranzaksiyalarini bloklamasligi uchun direct (unpooled) ulanishdan foydalaniladi
+is_migration = any(cmd in sys.argv for cmd in ['migrate', 'makemigrations'])
+active_db_url = (DATABASE_URL_UNPOOLED if (is_migration and DATABASE_URL_UNPOOLED) else DATABASE_URL)
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
-        conn_max_age=600,
+        default=active_db_url or f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=0 if is_migration else 600,
         conn_health_checks=True,
     )
 }
